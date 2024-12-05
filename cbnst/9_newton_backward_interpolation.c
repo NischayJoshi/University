@@ -37,23 +37,23 @@ int main()
   printf("Enter the value of x to interpolate: ");
   scanf("%f", &x);
 
-  float u = (x - X[0]) / h; // Calculate u for Newton forward formula
+  float u = (x - X[n - 1]) / h; // Calculate u for Newton backward formula
 
-  // Compute the forward difference table
+  // Compute the backward difference table
   for (int j = 1; j < n; j++)
   {
-    for (int i = 0; i < n - j; i++)
+    for (int i = n - 1; i >= j; i--)
     {
-      Y[i][j] = Y[i + 1][j - 1] - Y[i][j - 1];
+      Y[i][j] = Y[i][j - 1] - Y[i - 1][j - 1];
     }
   }
 
   // Uncomment this block to print the difference table (optional)
   /*
-  printf("\nForward Difference Table:\n");
+  printf("\nBackward Difference Table:\n");
   for (int i = 0; i < n; i++) {
     printf("%f ", X[i]);
-    for (int j = 0; j < n - i; j++) {
+    for (int j = 0; j <= i; j++) {
       printf("%f\t", Y[i][j]);
     }
     printf("\n");
@@ -61,15 +61,15 @@ int main()
   */
 
   // Compute the interpolated value
-  float y = Y[0][0]; // Starting with the first term
+  float y = Y[n - 1][0]; // Starting with the last value
   float p = 1;
   int fact = 1;
 
   for (int i = 1; i < n; i++)
   {
-    p *= (u - (i - 1));        // Compute (u)(u-1)(u-2)... iteratively
-    fact *= i;                 // Compute i! iteratively
-    y += (p * Y[0][i]) / fact; // Add each term of the formula
+    p *= (u + (i - 1));                // Compute (u)(u+1)(u+2)... iteratively
+    fact *= i;                         // Compute i! iteratively
+    y += (p * Y[n - 1 - i][i]) / fact; // Add each term of the formula
   }
 
   printf("The interpolated value of y at x = %f is: %f\n", x, y);

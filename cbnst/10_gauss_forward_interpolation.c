@@ -32,13 +32,6 @@ int main()
     scanf("%f", &Y[i][0]); // First column is filled with given Y values
   }
 
-  float h = X[1] - X[0]; // Assuming equally spaced X values
-  float x;
-  printf("Enter the value of x to interpolate: ");
-  scanf("%f", &x);
-
-  float u = (x - X[0]) / h; // Calculate u for Newton forward formula
-
   // Compute the forward difference table
   for (int j = 1; j < n; j++)
   {
@@ -59,17 +52,28 @@ int main()
     printf("\n");
   }
   */
-
+  float x;
+  printf("Enter the value of x to interpolate: ");
+  scanf("%f", &x);
+  int h = X[1] - X[0];
+  int mid = n / 2;
+  float u = (x - X[mid]) / h;
   // Compute the interpolated value
-  float y = Y[0][0]; // Starting with the first term
-  float p = 1;
-  int fact = 1;
 
-  for (int i = 1; i < n; i++)
+  float y = Y[mid][0] + (u * Y[mid][1]);
+  int fact = 1, p = 1;
+  for (int j = 2; j < n; j++)
   {
-    p *= (u - (i - 1));        // Compute (u)(u-1)(u-2)... iteratively
-    fact *= i;                 // Compute i! iteratively
-    y += (p * Y[0][i]) / fact; // Add each term of the formula
+    if (j % 2 == 0)
+    {
+      p *= (u - (j / 2));
+    }
+    else
+    {
+      p *= (u + (j / 2));
+    }
+    fact *= j;
+    y += (p * Y[mid - (j / 2)][j]) / fact;
   }
 
   printf("The interpolated value of y at x = %f is: %f\n", x, y);
