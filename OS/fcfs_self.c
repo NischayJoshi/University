@@ -3,34 +3,25 @@
 
 struct process
 {
-  int pid, at, bt, st, ct, rt, tat, wt;
-}pr[100];
+  int pid;
+  int at, bt, st, ct, rt, tat, wt;
+} P[50];
 
-int findmax(int a, int b)
+int comparator_PID(const void *P1, const void *P2)
 {
-  return a > b ? a : b;
+  int a = ((struct process *)P1)->pid;
+  int b = ((struct process *)P2)->pid;
+  return a - b;
 }
 
-int comparator_pid(const void *a, const void *b)
+int comparator_AT(const void *P1, const void *P2)
 {
-  int x = ((struct process *)a)->pid;
-  int y = ((struct process *)b)->pid;
-  if (x < y)
-    return -1;
+  int a = ((struct process *)P1)->at;
+  int b = ((struct process *)P2)->at;
+  if (a == b)
+    return comparator_PID(P1, P2);
   else
-    return 1;
-}
-
-int comparator_at(const void *a, const void *b)
-{
-  int x = ((struct process *)a)->at;
-  int y = ((struct process *)b)->at;
-  if (x < y)
-    return -1;
-  else if (x == 0)
-    return comparator_pid(a, b);
-  else
-    return 1;
+    return a - b;
 }
 
 int main()
@@ -38,31 +29,45 @@ int main()
   int n;
   printf("Enter the number of processes: ");
   scanf("%d", &n);
-  printf("Enter arrival time and burst time for each process in pair: \n");
-  for (int i = 0; i < n;i++)
+
+  printf("Enter the arrival time of each process: ");
+  for (int i = 0; i < n; i++)
   {
-    pr[i].pid = i;
-    scanf("%d", &pr[i].at);
-    scanf("%d", &pr[i].bt);
+    scanf("%d", &P[i].at);
+    P[i].pid = i + 1;
   }
 
-  qsort((void *)pr, n, sizeof(struct process), comparator_at);
-
-  int sum_rt, sum_tat, sum_wt, idle_time;
-
-  for (int i = 0; i < n;i++)
+  printf("Enter the burst time of each process: ");
+  for (int i = 0; i < n; i++)
   {
-    pr[i].st = (i == 0 ? pr[i].at : findmax(pr[i].at, pr[i - 1].ct));
-    pr[i].ct = pr[i].st + pr[i].bt;
-    pr[i].rt = pr[i].st - pr[i].at;
-    pr[i].tat = pr[i].ct - pr[i].at;
-    pr[i].wt = pr[i].tat - pr[i].bt;
-
-    sum_rt = pr[i].rt;
-    sum_tat = pr[i].tat;
-    sum_wt = pr[i].wt;
-    idle_time += (i == 0 ? 0 : (pr[i].st - pr[i - 1].ct));
+    scanf("%d", &P[i].bt);
   }
-  int length_cycle = pr[n - 1].ct - pr[0].st;
-  float cpu_utilization = ((length_cycle - idle_time) / length_cycle) * 100;
+
+  qsort(P, n, sizeof(struct process), comparator_AT);
+
+  int current_time = 0;
+  int total_tat = 0, total_wt = 0;
+  for (int i = 0; i < n; i++)
+  {
+    P[i].st = current_time > P[i].at ? current_time : P[i].at;
+    P[i].ct = P[i].st + P[i].bt;
+    P[i].rt = P[i].st - P[i].at;
+    P[i].tat = P[i].ct - P[i].at;
+    P[i].wt = P[i].tat - P[i].bt;
+    total_tat += P[i].tat;
+    total_wt += P[i].wt;
+    current_time = P[i].ct;
+  }
+
+  qsort(P, n, sizeof(struct process), comparator_PID);
+
+  printf("\n\nPID\tAT\tBT\tST\tCT\tRT\tTAT\tWT\n");
+  for (int i = 0; i < n; i++)
+  {
+    printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", P[i].pid, P[i].at, P[i].bt, P[i].st, P[i].ct, P[i].rt, P[i].tat, P[i].wt);
+  }
+  printf("Average turn around time = %f\n", (float)total_tat / n);
+  printf("Average waiting time = %f\n", (float)total_wt / n);
+
+  return 0;
 }
